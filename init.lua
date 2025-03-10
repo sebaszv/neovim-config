@@ -1,1 +1,2 @@
+require("opts")
 require("plugins")
