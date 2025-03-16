@@ -32,6 +32,20 @@ require("lazy").setup(
     change_detection = { enabled = true },
     checker = { enabled = true },
     install = { missing = true },
-    spec = { { import = "plugins/specs" } },
+    spec = {
+      {
+        "folke/tokyonight.nvim",
+        lazy = false,
+        priority = 1000,
+        config = function(plugin, opts)
+          require("tokyonight").setup(opts)
+          vim.cmd.colorscheme("tokyonight")
+        end,
+        ---@module 'tokyonight'
+        ---@type tokyonight.Config
+        opts = { style = "storm" },
+      },
+      { import = "plugins/specs" },
+    },
   }
 )
