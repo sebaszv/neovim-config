@@ -6,3 +6,8 @@
 -- I prefer accessing the system clipboard through its
 -- respective registers than syncing with the system clipboard.
 vim.opt.clipboard = ""
+
+-- Disable AI completion/suggestions.
+-- LazyVim has this on by default.
+-- It's not my cup of tea.
+vim.g.ai_cmp = false
