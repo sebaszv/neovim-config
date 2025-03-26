@@ -11,3 +11,7 @@ vim.opt.clipboard = ""
 -- LazyVim has this on by default.
 -- It's not my cup of tea.
 vim.g.ai_cmp = false
+
+-- Use basedpyright for Python LSP implementation
+-- instead of pyright.
+vim.g.lazyvim_python_lsp = "basedpyright"
