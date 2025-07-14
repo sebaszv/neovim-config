@@ -1,30 +1,53 @@
 {
   inputs = {
     systems.url = "github:nix-systems/default";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-
-    nixpkgs.url = "nixpkgs/nixos-24.11";
-
-    pre-commit-hooks = {
-      url = "github:cachix/git-hooks.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
+    nixpkgs.url = "nixpkgs/nixos-unstable";
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
     };
+
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    pre-commit-hooks = {
+      url = "github:cachix/git-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = import inputs.systems;
+  outputs =
+    {
+      systems,
+      flake-parts,
+      treefmt-nix,
+      pre-commit-hooks,
+      ...
+    }@inputs:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = import systems;
 
-      perSystem = { lib, pkgs, system, ... }:
-        let
-          treefmt = (inputs.treefmt-nix.lib.evalModule pkgs {
-            projectRootFile = "flake.lock";
+      imports = [
+        treefmt-nix.flakeModule
+        pre-commit-hooks.flakeModule
+      ];
+
+      perSystem =
+        { config, pkgs, ... }:
+        {
+          treefmt = {
+            # Whether to set `formatter` to the wrapped `treefmt`
+            # derivation that will use a generated config file and
+            # the needed formatters.
+            flakeFormatter = true;
+            # Whether to add the formatting check `checks.treefmt`.
+            # This concern is handled by `checks.pre-commit` when
+            # `hooks.treefmt.enable` is set as it runs `flakeFormatter`
+            # already. Having both is redundant.
+            flakeCheck = !(config.pre-commit.check.enable && config.pre-commit.settings.hooks.treefmt.enable);
             programs = {
-              nixpkgs-fmt.enable = true;
+              nixfmt.enable = true;
               stylua = {
                 enable = true;
                 settings = {
@@ -34,37 +57,29 @@
                 };
               };
             };
-          }).config.build.wrapper;
+          };
 
-          pre-commit = inputs.pre-commit-hooks.lib.${system}.run {
-            src = ./.;
-            hooks.treefmt = {
-              enable = true;
-              package = treefmt;
-              pass_filenames = false;
+          pre-commit = {
+            # Whether to add the check `checks.pre-commit` that will
+            # run the hook checks.
+            check.enable = true;
+            settings.hooks = {
+              treefmt = {
+                enable = true;
+                # The flake-module already does this, but ensuring
+                # doesn't hurt.
+                package = config.treefmt.build.wrapper;
+              };
             };
           };
-        in
-        rec {
-          checks.pre-commit = pre-commit;
-          formatter = treefmt;
+
           devShells.default = pkgs.mkShellNoCC {
-            inherit (pre-commit) shellHook;
-
-            packages = [
-              pkgs.git
-
-              pkgs.nil
-              pkgs.deadnix
-              pkgs.statix
-
-              pkgs.luajit
-              pkgs.lua-language-server
-
-              (pkgs.writeShellApplication {
-                name = "ff";
-                text = lib.getExe formatter;
-              })
+            shellHook = config.pre-commit.installationScript;
+            packages = with pkgs; [
+              git
+              nil
+              deadnix
+              statix
             ];
           };
         };
