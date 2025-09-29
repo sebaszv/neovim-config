@@ -20,4 +20,13 @@ return {
       end, opts.ensure_installed or {})
     end,
   },
+  {
+    "stevearc/conform.nvim",
+    opts = function(_, opts)
+      opts.formatters = opts.formatters or {}
+      opts.formatters.shfmt = opts.formatters.shfmt or {}
+      opts.formatters.shfmt.append_args = opts.formatters.shfmt.append_args or {}
+      table.insert(opts.formatters.shfmt.append_args, "--binary-next-line")
+    end,
+  },
 }
