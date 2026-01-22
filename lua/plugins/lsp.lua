@@ -24,9 +24,17 @@ return {
     "stevearc/conform.nvim",
     opts = function(_, opts)
       opts.formatters = opts.formatters or {}
+
       opts.formatters.shfmt = opts.formatters.shfmt or {}
       opts.formatters.shfmt.append_args = opts.formatters.shfmt.append_args or {}
       table.insert(opts.formatters.shfmt.append_args, "--binary-next-line")
+
+      if vim.bo.filetype == "markdown" then
+        opts.formatters.prettier = opts.formatters.prettier or {}
+        opts.formatters.prettier.append_args = opts.formatters.prettier.append_args or {}
+        table.insert(opts.formatters.prettier.append_args, "--prose-wrap")
+        table.insert(opts.formatters.prettier.append_args, "always")
+      end
     end,
   },
 }
