@@ -23,17 +23,21 @@ return {
   {
     "stevearc/conform.nvim",
     opts = function(_, opts)
-      opts.formatters = opts.formatters or {}
+      --- Append args to formatter defaults.
+      ---@param formatter string Formatter to modify.
+      ---@param args string[] Args to append.
+      local function append_args(formatter, args)
+        opts.formatters = opts.formatters or {}
+        opts.formatters[formatter] = opts.formatters[formatter] or {}
+        opts.formatters[formatter].append_args = opts.formatters[formatter].append_args or {}
 
-      opts.formatters.shfmt = opts.formatters.shfmt or {}
-      opts.formatters.shfmt.append_args = opts.formatters.shfmt.append_args or {}
-      table.insert(opts.formatters.shfmt.append_args, "--binary-next-line")
+        vim.list_extend(opts.formatters[formatter].append_args, args)
+      end
+
+      append_args("shfmt", { "--binary-next-line" })
 
       if vim.bo.filetype == "markdown" then
-        opts.formatters.prettier = opts.formatters.prettier or {}
-        opts.formatters.prettier.append_args = opts.formatters.prettier.append_args or {}
-        table.insert(opts.formatters.prettier.append_args, "--prose-wrap")
-        table.insert(opts.formatters.prettier.append_args, "always")
+        append_args("prettier", { "--prose-wrap", "always" })
       end
     end,
   },
