@@ -34,7 +34,12 @@
       ];
 
       perSystem =
-        { config, pkgs, ... }:
+        {
+          self',
+          config,
+          pkgs,
+          ...
+        }:
         {
           treefmt = {
             # Whether to set `formatter` to the wrapped `treefmt`
@@ -81,6 +86,30 @@
               deadnix
               statix
             ];
+          };
+
+          apps = {
+            default = self'.apps.snipmate-to-json;
+            snipmate-to-json = {
+              type = "app";
+              program =
+                with pkgs;
+                buildGoModule {
+                  name = "snipmate-to-json";
+                  vendorHash = null;
+                  src = fetchFromGitHub {
+                    owner = "nadiamoe";
+                    repo = "snipmate-to-json";
+                    rev = "97023e624cf8b741b90599bbd68202c724f88585";
+                    hash = "sha256-KE6lsffTwmOEs2b6/jR9fMnkZkUXTRuVEzSzJU9TaGQ=";
+                  };
+                };
+              meta = {
+                mainProgram = "snipmate-to-json";
+                description = "Convert snippets in SnipMate format to JSON, as used by VSCode and other snippet plugins.";
+              };
+            };
+
           };
         };
     };
