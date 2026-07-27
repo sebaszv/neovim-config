@@ -6,38 +6,10 @@ local sn = require("luasnip").snippet_node
 
 local util = require("util")
 
---- Whether at the top-level of a Python buffer.
----@param buf integer? Buffer to check or the current buffer.
----@param cursor_or_win ([integer, integer] | integer)?  Cursor to check position of. A window ID can be specified instead, whose cursor will be used. Otherwise, the cursor for the current window is used.
----@return boolean
-local function cursor_at_python_top_level(buf, cursor_or_win)
-  local cursor
-
-  if type(cursor_or_win) == "table" then
-    cursor = cursor_or_win
-  else
-    cursor = vim.api.nvim_win_get_cursor(cursor_or_win or 0)
-  end
-
-  local row, col = cursor[1] - 1, cursor[2]
-  local node = vim.treesitter.get_node({
-    bufnr = buf or 0,
-    pos = { row, col },
-  })
-
-  if not node then
-    return true
-  end
-
-  local parent = node:parent()
-
-  return not parent or parent:type() == "module"
-end
-
 --- Whether the current cursor is at the top-level of a Python buffer.
 ---@return boolean
 local function current_cursor_at_python_top_level()
-  return cursor_at_python_top_level(0, 0)
+  return util.treesitter.cursor_at_top_level("module", 0, 0)
 end
 
 return {
