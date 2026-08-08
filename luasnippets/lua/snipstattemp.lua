@@ -21,6 +21,7 @@ return {
     desc = "LuaSnip static snippet template",
     condition = at_top_level_of_luasnippet,
     show_condition = at_top_level_of_luasnippet,
+    priority = 1001,
   }, {
     d(1, function()
       local basename = vim.fs.basename(vim.api.nvim_buf_get_name(0))
@@ -53,11 +54,16 @@ return {
           '",',
           indent(2, "condition = nil,"),
           indent(2, "show_condition = nil,"),
+          indent(2, "priority = "),
+        }),
+        i(3, "nil"),
+        t({
+          ",",
           indent("}, {"),
           indent(2, "t({"),
           indent(3, '"'),
         }),
-        i(3),
+        i(4),
         t({
           '",',
           indent(2, "}),"),

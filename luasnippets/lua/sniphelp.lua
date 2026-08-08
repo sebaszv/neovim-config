@@ -19,6 +19,7 @@ return {
     desc = "LuaSnip snippet definer helper functions",
     condition = at_top_level_of_luasnippet,
     show_condition = at_top_level_of_luasnippet,
+    priority = 1002,
   }, {
     t({
       'local s = require("luasnip").snippet',
