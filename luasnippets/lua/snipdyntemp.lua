@@ -53,6 +53,11 @@ return {
           '",',
           indent(2, "condition = nil,"),
           indent(2, "show_condition = nil,"),
+          indent(2, "priority = "),
+        }),
+        i(3, "nil"),
+        t({
+          ",",
           indent("}, {"),
           indent(2, "d(1, function()"),
           indent(3, "-- A dynamic node is used to track the"),
@@ -63,7 +68,7 @@ return {
           indent(4, "t({"),
           indent(5, '"'),
         }),
-        i(3),
+        i(4),
         t({
           '",',
           indent(4, "}),"),
