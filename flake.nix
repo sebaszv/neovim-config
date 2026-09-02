@@ -73,14 +73,24 @@
             };
           };
 
-          devShells.default = pkgs.mkShellNoCC {
-            shellHook = config.pre-commit.installationScript;
-            packages = with pkgs; [
-              git
-              nil
-              deadnix
-              statix
-            ];
+          devShells = {
+            default = pkgs.mkShellNoCC {
+              shellHook = config.pre-commit.installationScript;
+              packages = with pkgs; [
+                git
+                nil
+                deadnix
+                statix
+              ];
+            };
+            haskell-debug-adapter-build-install-deps = pkgs.mkShell {
+              shellHook = ">&2 echo 'Building haskell-debug-adapter should work now in this shell.'";
+              packages = with pkgs; [
+                haskellPackages.cabal-install
+                pkg-config
+                zlib.dev
+              ];
+            };
           };
         };
     };
