@@ -92,6 +92,14 @@ return {
         end,
         desc = "Grep Buffer",
       },
+      {
+        "<c-->",
+        function()
+          Snacks.terminal.focus(nil, { cwd = LazyVim.root() })
+        end,
+        desc = "Terminal (Root Dir)",
+        mode = { "n", "t" },
+      },
     },
   },
 }
