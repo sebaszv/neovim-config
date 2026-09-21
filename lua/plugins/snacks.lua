@@ -57,6 +57,14 @@ return {
           },
         },
       },
+      terminal = {
+        win = {
+          position = "float",
+          width = 0.85,
+          height = 0.8,
+          border = "rounded",
+        },
+      },
     },
     ---@type LazyKeysSpec[]
     keys = {
