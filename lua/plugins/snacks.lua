@@ -4,71 +4,117 @@
 return {
   {
     "folke/snacks.nvim",
-    ---@type snacks.Config
-    opts = {
-      win = {
-        wo = {
-          number = true,
-          relativenumber = true,
+    opts = function(_, opts)
+      ---@type snacks.Config
+      local opts_overrides = {
+        win = {
+          wo = {
+            number = true,
+            relativenumber = true,
+          },
         },
-      },
-      picker = {
-        sources = {
-          -- Enable wrapping by default
-          -- on the notification pane
-          -- so messages can be fully
-          -- read always.
-          notifications = {
-            win = {
-              preview = {
-                wo = { wrap = true },
+        picker = {
+          sources = {
+            -- Enable wrapping by default
+            -- on the notification pane
+            -- so messages can be fully
+            -- read always.
+            notifications = {
+              win = {
+                preview = {
+                  wo = { wrap = true },
+                },
               },
             },
-          },
-          -- Custom picker for grepping only
-          -- the current buffer. The builtins
-          -- offer grepping all currently
-          -- opened buffers, recursive grepping,
-          -- and fuzzy searching the current
-          -- buffer lines, but not this. The
-          -- chosen options were borrowed from
-          -- the 'Buffer Lines' and 'Grep Buffers'
-          -- builtin pickers.
-          grep_buffer = {
-            finder = "grep",
-            format = "file",
-            live = true,
-            need_search = false,
-            supports_live = true,
-            layout = {
-              preview = "main",
-              preset = "ivy",
-            },
-            main = { current = true },
-            config = function(opts)
-              ---@cast opts snacks.picker.grep.Config
-              opts.dirs = {
-                -- Target only the current file specifically,
-                -- even if it isn't actually a "dir". These
-                -- are the paths that will be fed to ripgrep.
-                vim.api.nvim_buf_get_name(0),
-              }
+            -- Custom picker for grepping only
+            -- the current buffer. The builtins
+            -- offer grepping all currently
+            -- opened buffers, recursive grepping,
+            -- and fuzzy searching the current
+            -- buffer lines, but not this. The
+            -- chosen options were borrowed from
+            -- the 'Buffer Lines' and 'Grep Buffers'
+            -- builtin pickers.
+            grep_buffer = {
+              finder = "grep",
+              format = "file",
+              live = true,
+              need_search = false,
+              supports_live = true,
+              layout = {
+                preview = "main",
+                preset = "ivy",
+              },
+              main = { current = true },
+              config = function(opts_)
+                ---@cast opts_ snacks.picker.grep.Config
+                opts_.dirs = {
+                  -- Target only the current file specifically,
+                  -- even if it isn't actually a "dir". These
+                  -- are the paths that will be fed to ripgrep.
+                  vim.api.nvim_buf_get_name(0),
+                }
 
-              return opts
-            end,
+                return opts_
+              end,
+            },
           },
         },
-      },
-      terminal = {
-        shell = (vim.fn.executable("fish") == 1) and "fish" or nil,
-        win = {
-          position = "float",
-          width = 0.85,
-          height = 0.8,
-          border = "rounded",
+        terminal = {
+          shell = (vim.fn.executable("fish") == 1) and "fish" or nil,
+          win = {
+            position = "float",
+            width = 0.85,
+            height = 0.8,
+            border = "rounded",
+          },
         },
-      },
-    },
+      }
+
+      --- Close all snacks.nvim terminal instances,
+      --- which are cached based on the arguments
+      --- passed during the terminal spin-up. Exiting
+      --- the terminal closes and removes the instance
+      --- from the cache, but if it blocks, this can't
+      --- happen, hence what this function is for. It
+      --- could be targeted at specific instances, but
+      --- a big button is sufficient for those rare cases
+      --- where restarting the editor is inconvenient.
+      local function snacks_terminal_close_all()
+        for _, t in pairs(Snacks.terminal.list()) do
+          t:close()
+        end
+      end
+
+      vim.api.nvim_create_user_command("SnacksTerminalCloseAll", snacks_terminal_close_all, {})
+      vim.api.nvim_create_user_command("SnacksTerminalSetShell", function(args)
+        local shell = args.args
+
+        if vim.fn.executable(shell) ~= 1 then
+          vim.notify("'" .. shell .. "' not found", vim.log.levels.WARN)
+
+          return
+        end
+
+        snacks_terminal_close_all()
+        Snacks.config.terminal.shell = shell
+        vim.notify("Snacks terminal shell set to '" .. shell .. "'")
+      end, {
+        nargs = 1,
+        complete = function()
+          return vim.tbl_filter(function(s)
+            return vim.fn.executable(s) == 1
+          end, {
+            "bash",
+            "fish",
+            "nu",
+            "zsh",
+          })
+        end,
+      })
+
+      return vim.tbl_deep_extend("force", opts, opts_overrides)
+    end,
     ---@type LazyKeysSpec[]
     keys = {
       -- 'Buffer Lines' is mapped to `<leader>sb` by default.
