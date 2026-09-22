@@ -60,6 +60,7 @@ return {
         },
       },
       terminal = {
+        shell = (vim.fn.executable("fish") == 1) and "fish" or nil,
         win = {
           position = "float",
           width = 0.85,
