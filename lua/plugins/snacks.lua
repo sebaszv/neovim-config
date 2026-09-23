@@ -4,6 +4,7 @@
 return {
   {
     "folke/snacks.nvim",
+    optional = true,
     opts = function(_, opts)
       ---@type snacks.Config
       local opts_overrides = {
