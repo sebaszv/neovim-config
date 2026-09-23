@@ -1,6 +1,7 @@
 return {
   {
     "mason-org/mason.nvim",
+    optional = true,
     opts = function(_, opts)
       -- Ensure that Mason appends to PATH, rather than
       -- prepending, so that whatever was originally on

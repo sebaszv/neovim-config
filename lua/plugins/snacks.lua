@@ -4,6 +4,7 @@
 return {
   {
     "folke/snacks.nvim",
+    optional = true,
     ---@param opts snacks.Config
     opts = function(_, opts)
       ---@type snacks.Config

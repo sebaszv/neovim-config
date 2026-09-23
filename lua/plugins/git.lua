@@ -3,6 +3,7 @@
 return {
   {
     "lewis6991/gitsigns.nvim",
+    optional = true,
     ---@param opts Gitsigns.Config
     opts = function(_, opts)
       -- This is off by default, so we
