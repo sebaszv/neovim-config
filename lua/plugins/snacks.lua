@@ -55,8 +55,6 @@ return {
                   -- are the paths that will be fed to ripgrep.
                   vim.api.nvim_buf_get_name(0),
                 }
-
-                return opts_
               end,
             },
           },
