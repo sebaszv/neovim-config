@@ -83,13 +83,28 @@ return {
       --- could be targeted at specific instances, but
       --- a big button is sufficient for those rare cases
       --- where restarting the editor is inconvenient.
+      ---@return integer # Number of terminal instances closed.
       local function snacks_terminal_close_all()
+        local count = 0
+
         for _, t in pairs(Snacks.terminal.list()) do
           t:close()
+          count = count + 1
         end
+
+        return count
       end
 
-      vim.api.nvim_create_user_command("SnacksTerminalCloseAll", snacks_terminal_close_all, {})
+      vim.api.nvim_create_user_command("SnacksTerminalCloseAll", function()
+        local total_closed = snacks_terminal_close_all()
+
+        if total_closed == 1 then
+          vim.notify(("Closed %d snacks terminal instance"):format(total_closed))
+        else
+          vim.notify(("Closed %d snacks terminal instances"):format(total_closed))
+        end
+      end, {})
+
       vim.api.nvim_create_user_command("SnacksTerminalSetShell", function(args)
         local shell = args.args
 
