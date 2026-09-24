@@ -1,5 +1,6 @@
 ---@class util
 ---@field nix util.nix
+---@field string util.string
 ---@field treesitter util.treesitter
 ---@field whitespace util.whitespace
 ---@field window util.window
