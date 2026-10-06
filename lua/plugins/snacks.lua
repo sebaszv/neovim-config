@@ -63,6 +63,10 @@ return {
           width = 0.85,
           height = 0.8,
           border = "rounded",
+          wo = {
+            number = false,
+            relativenumber = false,
+          },
         },
       },
     },
