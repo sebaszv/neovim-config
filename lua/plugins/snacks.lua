@@ -58,6 +58,37 @@ return {
                 }
               end,
             },
+            plugins = {
+              title = "Plugin Directories",
+              finder = function()
+                local items = {} ---@type snacks.picker.Item[]
+
+                for _, plugin in ipairs(require("lazy").plugins()) do
+                  if not plugin.virtual then
+                    items[#items + 1] = {
+                      text = plugin.name,
+                      file = plugin.dir,
+                      dir = true,
+                    }
+                  end
+                end
+                table.sort(items, function(a, b)
+                  return a.text < b.text
+                end)
+                return items
+              end,
+              format = "file",
+              confirm = { "tcd", "picker_explorer" },
+              win = {
+                preview = { minimal = true },
+                input = {
+                  keys = {
+                    ["<c-f>"] = { { "tcd", "picker_files" }, mode = { "n", "i" } },
+                    ["<c-g>"] = { { "tcd", "picker_grep" }, mode = { "n", "i" } },
+                  },
+                },
+              },
+            },
           },
         },
         terminal = {
@@ -162,6 +193,13 @@ return {
           Snacks.picker.pick("grep_buffer")
         end,
         desc = "Grep Buffer",
+      },
+      {
+        "<leader>fP",
+        function()
+          Snacks.picker.pick("plugins")
+        end,
+        desc = "Plugin Directories",
       },
       {
         "<c-->",
