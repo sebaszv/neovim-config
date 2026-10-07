@@ -1,4 +1,5 @@
 ---@class util
+---@field conform util.conform
 ---@field nix util.nix
 ---@field string util.string
 ---@field treesitter util.treesitter
