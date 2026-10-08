@@ -136,6 +136,13 @@ return {
     end,
     ---@type LazyKeysSpec[]
     keys = {
+      {
+        "<leader>fz",
+        function()
+          Snacks.picker.zoxide()
+        end,
+        desc = "Zoxide",
+      },
       -- 'Buffer Lines' is mapped to `<leader>sb` by default.
       -- 'Grep Buffers' is mapped to `<leader>sB` by default.
       -- Having 'Grep Buffer' mapped to `<leader>sb` to match
