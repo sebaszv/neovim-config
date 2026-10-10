@@ -93,6 +93,97 @@ local function modify_args(opts, prepend_or_append, formatter, args, config_file
 
   ---@type "prepend_args"|"append_args"
   local args_label = prepend_or_append .. "_args"
+  ---@type nil|util.conform.ArgsType
+  local prev_args
+
+  --- Return the new arguments list if not config file is found.
+  ---@type util.conform.ArgsFunc
+  local function new_args_if_config_file_not_present(self_, ctx)
+    ---@diagnostic disable-next-line: param-type-mismatch
+    local config_file_present = vim.fs.find(config_filenames, {
+      limit = 1,
+      path = ctx.dirname,
+      upward = true,
+    })[1] ~= nil
+
+    if config_file_present then
+      return {}
+    end
+
+    return normalise_args(args, self_, ctx) or {}
+  end
+
+  --- Render an "args" function that renders and returns the args dynamically at invocation based on the current config and context.
+  --- These functions are not complex and could easily be inlined, but those definitions clutter the function flow with the various
+  --- possible branches. Encapsulating it here aides readability.
+  ---@param cur_args nil|util.conform.ArgsType Current args value to be merged with the new args. The value must be passed here to be "baked" into the function for dynamic evaluation at invocation. Making it be passed in rather than accessing a function-level variable that is easy to forget to re-assign is safer. If the value is `nil`, it is not baked into the rendered function.
+  ---@return util.conform.ArgsType
+  local function render_merged_args_value(cur_args)
+    -- stylua: ignore
+    local is_static = not (
+      type(cur_args) == "function"
+      or type(args) == "function"
+      or config_filenames ~= nil
+    )
+
+    if is_static then
+      local base_args = normalise_args(cur_args)
+      local new_args = normalise_args(args)
+      local merged = vim.list_extend({}, base_args or {})
+
+      return vim.list_extend(merged, new_args or {})
+    end
+
+    if config_filenames then
+      if cur_args then
+        return function(self_, ctx)
+          local base_args = normalise_args(cur_args, self_, ctx)
+          local has_config_file = vim.fs.find(config_filenames, {
+            limit = 1,
+            path = ctx.dirname,
+            upward = true,
+          })[1] ~= nil
+
+          if has_config_file then
+            return base_args or {}
+          end
+
+          local new_args = normalise_args(args, self_, ctx)
+          local merged = vim.list_extend({}, base_args or {})
+
+          return vim.list_extend(merged, new_args or {})
+        end
+      end
+
+      return function(self_, ctx)
+        local has_config_file = vim.fs.find(config_filenames, {
+          limit = 1,
+          path = ctx.dirname,
+          upward = true,
+        })[1] ~= nil
+
+        if has_config_file then
+          return {}
+        end
+
+        return normalise_args(args, self_, ctx) or {}
+      end
+    end
+
+    if cur_args then
+      return function(self_, ctx)
+        local base_args = normalise_args(cur_args, self_, ctx)
+        local new_args = normalise_args(args, self_, ctx)
+        local merged = vim.list_extend({}, base_args or {})
+
+        return vim.list_extend(merged, new_args or {})
+      end
+    end
+
+    return args
+  end
+
+  local x = render_merged_args_value
 
   opts.formatters = opts.formatters or {}
   opts.formatters[formatter] = opts.formatters[formatter] or {}
@@ -105,20 +196,7 @@ local function modify_args(opts, prepend_or_append, formatter, args, config_file
 
       if not config[args_label] then
         if config_filenames then
-          ---@type util.conform.ArgsFunc
-          config[args_label] = function(self_, ctx)
-            local has_config_file = vim.fs.find(config_filenames, {
-              limit = 1,
-              path = ctx.dirname,
-              upward = true,
-            })[1] ~= nil
-
-            if has_config_file then
-              return {}
-            end
-
-            return normalise_args(args, self_, ctx) or {}
-          end
+          config[args_label] = new_args_if_config_file_not_present
         else
           config[args_label] = args
         end
@@ -174,19 +252,7 @@ local function modify_args(opts, prepend_or_append, formatter, args, config_file
   if not opts.formatters[formatter][args_label] then
     if config_filenames then
       ---@type util.conform.ArgsFunc
-      opts.formatters[formatter][args_label] = function(self_, ctx)
-        local has_config_file = vim.fs.find(config_filenames, {
-          limit = 1,
-          path = ctx.dirname,
-          upward = true,
-        })[1] ~= nil
-
-        if has_config_file then
-          return {}
-        end
-
-        return normalise_args(args, self_, ctx) or {}
-      end
+      opts.formatters[formatter][args_label] = new_args_if_config_file_not_present
     else
       opts.formatters[formatter][args_label] = args
     end
